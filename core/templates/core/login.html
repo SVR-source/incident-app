@@ -1,0 +1,21 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-md-5">
+  <div class="card shadow"><div class="card-body">
+    <h3 class="text-center mb-3">🔐 Đăng nhập</h3>
+    <form method="post">{% csrf_token %}
+      <div class="mb-3"><label>Tên đăng nhập</label>
+        <input type="text" name="username" class="form-control" required></div>
+      <div class="mb-3"><label>Mật khẩu</label>
+        <input type="password" name="password" class="form-control" required></div>
+      <button class="btn btn-primary w-100">Đăng nhập</button>
+    </form>
+    <div class="text-center mt-3">
+      <a href="{% url 'forgot_password' %}" class="text-decoration-none small">🔑 Quên mật khẩu?</a>
+    </div>
+    <div class="alert alert-info small mt-3 mb-0">
+      💡 Lần đầu đăng nhập, mật khẩu mặc định là <strong>123456</strong> và sẽ được yêu cầu đổi.
+    </div>
+  </div></div>
+</div></div>
+{% endblock %}

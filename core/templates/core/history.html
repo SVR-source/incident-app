@@ -1,0 +1,56 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h4>📊 Lịch sử báo cáo sự cố</h4>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-6 col-md-2">
+    <input type="number" name="day" placeholder="Ngày" min="1" max="31" class="form-control" value="{{ filters.day|default:'' }}">
+  </div>
+  <div class="col-6 col-md-2">
+    <input type="number" name="month" placeholder="Tháng" min="1" max="12" class="form-control" value="{{ filters.month|default:'' }}">
+  </div>
+  <div class="col-6 col-md-2">
+    <input type="number" name="year" placeholder="Năm" class="form-control" value="{{ filters.year|default:'' }}">
+  </div>
+  <div class="col-6 col-md-3">
+    <select name="machine" class="form-select">
+      <option value="">-- Tất cả máy --</option>
+      {% for m in machines %}
+      <option value="{{ m.id }}" {% if filters.machine == m.id|stringformat:"s" %}selected{% endif %}>{{ m }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-12 col-md-3">
+    <button class="btn btn-primary w-100">🔍 Lọc</button>
+  </div>
+</form>
+
+<div class="table-responsive">
+<table class="table table-striped table-bordered">
+  <thead class="table-dark">
+    <tr>
+      <th>#</th><th>Ngày giờ</th><th>Người báo</th><th>Máy</th><th>Lỗi</th><th>PIC</th><th>Trạng thái</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for i in incidents %}
+    <tr>
+      <td>{{ i.id }}</td>
+      <td>{{ i.created_at|date:"d/m/Y H:i" }}</td>
+      <td>{{ i.reporter.username }}</td>
+      <td>{{ i.machine }}</td>
+      <td>{{ i.error_type.name }}</td>
+      <td>{{ i.pic.username|default:"-" }}</td>
+      <td>
+        <span class="badge bg-{% if i.status == 'resolved' %}success{% elif i.status == 'in_progress' %}info{% else %}secondary{% endif %}">
+          {{ i.get_status_display }}
+        </span>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7" class="text-center">Không có dữ liệu</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

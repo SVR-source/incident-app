@@ -1,0 +1,25 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h4>📊 Giờ công của tôi</h4>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-4"><input type="number" name="month" min="1" max="12" value="{{ month }}" class="form-control" placeholder="Tháng"></div>
+  <div class="col-4"><input type="number" name="year" value="{{ year }}" class="form-control" placeholder="Năm"></div>
+  <div class="col-4"><button class="btn btn-primary w-100">Xem</button></div>
+</form>
+
+<div class="alert alert-info">
+  Tổng giờ: <strong>{{ total_hours }}</strong> giờ × {{ rate|floatformat:0 }} VND
+  = <strong class="text-danger">{{ total_salary|floatformat:0 }} VND</strong>
+</div>
+
+<div class="table-responsive"><table class="table table-sm table-striped">
+<thead><tr><th>Ngày</th><th>Vào</th><th>Ra</th><th>Giờ</th><th>Tiệm</th></tr></thead><tbody>
+  {% for a in attendances %}
+  <tr><td>{{ a.check_in|date:"d/m/Y" }}</td>
+      <td>{{ a.check_in|date:"H:i" }}</td>
+      <td>{{ a.check_out|date:"H:i" }}</td>
+      <td>{{ a.hours_worked }}</td>
+      <td>{{ a.store.display_name }}</td></tr>
+  {% empty %}<tr><td colspan="5" class="text-center">Không có dữ liệu</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

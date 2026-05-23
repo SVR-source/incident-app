@@ -1,0 +1,22 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h4>👥 Giờ công tiệm: {{ store.display_name }}</h4>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-4"><input type="number" name="month" min="1" max="12" value="{{ month }}" class="form-control"></div>
+  <div class="col-4"><input type="number" name="year" value="{{ year }}" class="form-control"></div>
+  <div class="col-4"><button class="btn btn-primary w-100">Xem</button></div>
+</form>
+
+<div class="table-responsive"><table class="table table-bordered">
+<thead class="table-dark"><tr><th>Nhân viên</th><th>Tổng giờ</th><th>Lương/giờ</th><th>Tổng lương</th></tr></thead>
+<tbody>
+{% for uid, d in user_data.items %}
+<tr>
+  <td>{{ d.user.profile.full_name|default:d.user.username }} ({{ d.user.username }})</td>
+  <td>{{ d.total_hours }}</td>
+  <td>{{ d.rate|floatformat:0 }}</td>
+  <td><strong>{{ d.salary|floatformat:0 }} VND</strong></td>
+</tr>
+{% empty %}<tr><td colspan="4" class="text-center">Không có dữ liệu</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

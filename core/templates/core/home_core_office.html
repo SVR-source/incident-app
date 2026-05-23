@@ -1,0 +1,47 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="alert alert-info py-2">🏢 Office Mode – Core Team</div>
+<h5>📋 Sự cố toàn hệ thống</h5>
+
+{% for i in incidents %}
+<div class="incident-row {% if i.status == 'in_progress' %}in-progress{% elif i.status == 'resolved' %}resolved{% endif %}">
+  <div class="d-flex justify-content-between flex-wrap gap-2">
+    <div>
+      <strong>{{ i.error_type.icon }} {{ i.error_type.name }}</strong>
+      <span class="badge bg-secondary">{{ i.store.display_name }}</span><br>
+      <small>{{ i.machine }} – {{ i.created_at|date:"d/m/Y H:i" }} – báo bởi
+        {% if i.reporter %}{{ i.reporter.username }}{% else %}-{% endif %}
+      </small><br>
+      <small>PIC: <strong>{% if i.pic %}{{ i.pic.username }}{% else %}-{% endif %}</strong>
+        – Trạng thái: <strong>{{ i.get_status_display }}</strong>
+        {% if i.status == 'in_progress' %}
+          – ⏱ <span class="timer text-info fw-bold" data-start="{{ i.in_progress_at|date:'c' }}"></span>
+        {% endif %}
+      </small>
+    </div>
+    {% if i.pic_id == me_id %}
+    <div class="d-flex gap-1 align-items-center">
+      {% if i.status == 'new' %}
+        <a href="{% url 'incident_action' i.id 'in_progress' %}" class="btn btn-sm btn-info">⏱ Đang xử lý</a>
+      {% elif i.status == 'in_progress' %}
+        <a href="{% url 'incident_action' i.id 'resolved' %}" class="btn btn-sm btn-success">✅ Hoàn thành</a>
+      {% else %}
+        <span class="badge bg-success">Đã xong ({{ i.processing_duration }})</span>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% empty %}<p>Không có sự cố.</p>{% endfor %}
+
+<script>
+function updateTimers(){
+  document.querySelectorAll('.timer').forEach(el=>{
+    const s=new Date(el.dataset.start), d=Math.floor((new Date()-s)/1000);
+    const h=Math.floor(d/3600), m=Math.floor((d%3600)/60), sec=d%60;
+    el.textContent = `${h}h ${m}m ${sec}s`;
+  });
+}
+setInterval(updateTimers,1000); updateTimers();
+</script>
+{% endblock %}
