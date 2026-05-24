@@ -1,21 +1,18 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<h4 class="mb-3">🚨 Chọn loại sự cố</h4>
-<div class="row g-3">
-  {% for e in errors %}
-  <div class="col-6 col-md-4">
-    <a href="{% url 'select_machine' e.id %}" class="text-decoration-none text-dark">
-      <div class="card error-card text-center h-100">
-        <div class="card-body">
-          <div style="font-size:2.5rem">{{ e.icon }}</div>
-          <strong>{{ e.name }}</strong>
-        </div>
-      </div>
-    </a>
-  </div>
-  {% empty %}
-  <p>Chưa có loại lỗi nào. Vui lòng vào /admin/ để thêm.</p>
-  {% endfor %}
+<div class="page-header">
+    <a href="{% url 'home' %}" class="back-btn">←</a>
+    <h4>🚨 Chọn loại sự cố</h4>
 </div>
-<a href="{% url 'home' %}" class="btn btn-secondary mt-3">← Quay lại</a>
+
+<div class="error-grid">
+{% for e in errors %}
+    <a href="{% url 'select_machine' e.id %}" class="error-card">
+        <div class="icon">{{ e.icon }}</div>
+        <div class="name">{{ e.name }}</div>
+    </a>
+{% empty %}
+    <p>Chưa có loại lỗi nào.</p>
+{% endfor %}
+</div>
 {% endblock %}

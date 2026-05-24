@@ -1,38 +1,67 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<div class="alert alert-info py-2">
-  📍 Đang làm tại: <strong>{{ store.display_name }}</strong>
-  {% if is_senior %}<span class="badge bg-success">SENIOR</span>{% endif %}
+<div class="stat-card">
+    <div class="label">📍 Đang làm tại</div>
+    <div style="font-size:1.1rem; font-weight:600">{{ store.display_name }}</div>
+    {% if is_senior %}<span class="badge bg-warning text-dark mt-1">⭐ SENIOR STAFF</span>{% endif %}
 </div>
 
 <div class="row g-3 mb-3">
-  <div class="col-12 col-md-6">
-    {% if current_attendance %}
-      <div class="card border-success"><div class="card-body text-center">
-        <p class="mb-2">✅ Đang trong ca (từ {{ current_attendance.check_in|date:"H:i d/m" }})</p>
-        <a href="{% url 'check_out' %}" class="btn btn-danger big-btn w-100">🔚 Kết thúc ca</a>
-      </div></div>
-    {% else %}
-      <a href="{% url 'check_in' %}" class="btn btn-success big-btn w-100">▶️ Chấm công vào ca</a>
+    <div class="col-6">
+        {% if current_attendance %}
+            <a href="{% url 'check_out' %}" class="action-btn checkout">
+                <div class="ico">🔚</div>
+                <div>Kết thúc ca</div>
+                <small style="font-weight:400; opacity:0.85">Từ {{ current_attendance.check_in|date:"H:i" }}</small>
+            </a>
+        {% else %}
+            <a href="{% url 'check_in' %}" class="action-btn checkin">
+                <div class="ico">▶️</div>
+                <div>Vào ca</div>
+            </a>
+        {% endif %}
+    </div>
+    <div class="col-6">
+        <a href="{% url 'report_error' %}" class="action-btn report">
+            <div class="ico">🚨</div>
+            <div>Báo lỗi</div>
+        </a>
+    </div>
+    <div class="col-6">
+        <a href="{% url 'my_hours' %}" class="action-btn hours">
+            <div class="ico">⏱</div>
+            <div>Giờ công</div>
+        </a>
+    </div>
+    {% if is_senior %}
+    <div class="col-6">
+        <a href="{% url 'store_hours' %}" class="action-btn" style="background: linear-gradient(135deg,#0dcaf0,#0d6efd); color:#fff">
+            <div class="ico">👥</div>
+            <div>Tiệm</div>
+        </a>
+    </div>
     {% endif %}
-  </div>
-  <div class="col-12 col-md-6">
-    <a href="{% url 'report_error' %}" class="btn btn-warning big-btn w-100">🚨 Báo cáo sự cố</a>
-  </div>
 </div>
 
-<div class="row g-2 mb-3">
-  <div class="col-6"><a href="{% url 'my_hours' %}" class="btn btn-outline-primary w-100">📊 Giờ công của tôi</a></div>
-  {% if is_senior %}
-    <div class="col-6"><a href="{% url 'store_hours' %}" class="btn btn-outline-success w-100">👥 Giờ công tiệm</a></div>
-  {% endif %}
-</div>
-
-<h5>📋 Sự cố gần đây {% if is_senior %}(của tiệm){% else %}(của tôi){% endif %}</h5>
+<h6 class="mt-4 mb-2 text-muted small fw-semibold">
+    📋 Sự cố gần đây {% if is_senior %}(tiệm){% else %}(của tôi){% endif %}
+</h6>
 {% for r in recent %}
-  <div class="incident-row {% if r.status == 'in_progress' %}in-progress{% elif r.status == 'resolved' %}resolved{% endif %}">
-    <strong>{{ r.error_type.icon }} {{ r.error_type.name }}</strong> – {{ r.machine }}
-    <div class="small text-muted">{{ r.created_at|date:"d/m/Y H:i" }} – {{ r.get_status_display }}{% if is_senior %} – báo bởi {{ r.reporter.username }}{% endif %}</div>
-  </div>
-{% empty %}<p class="text-muted">Chưa có.</p>{% endfor %}
+    <div class="incident-item {% if r.status == 'in_progress' %}in-progress{% elif r.status == 'resolved' %}resolved{% endif %}">
+        <div class="d-flex justify-content-between align-items-start">
+            <div class="flex-grow-1">
+                <div class="title">{{ r.error_type.icon }} {{ r.error_type.name }}</div>
+                <div class="meta">{{ r.machine }} • {{ r.created_at|date:"H:i d/m" }}{% if is_senior %} • {{ r.reporter.username }}{% endif %}</div>
+            </div>
+            <span class="badge bg-{% if r.status == 'resolved' %}success{% elif r.status == 'in_progress' %}info{% else %}warning text-dark{% endif %}">
+                {{ r.get_status_display }}
+            </span>
+        </div>
+    </div>
+{% empty %}
+    <div class="text-center text-muted p-4">
+        <div style="font-size:2.5rem">✨</div>
+        <p class="mb-0 small">Chưa có sự cố nào</p>
+    </div>
+{% endfor %}
 {% endblock %}

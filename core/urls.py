@@ -16,4 +16,6 @@ urlpatterns = [
     path('my-hours/', views.my_hours, name='my_hours'),
     path('store-hours/', views.store_hours, name='store_hours'),
     path('incident/<int:incident_id>/<str:action>/', views.incident_action, name='incident_action'),
+    path('manifest.json', views.manifest, name='manifest'),
+    path('sw.js', views.service_worker, name='sw'),
 ]

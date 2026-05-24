@@ -1,87 +1,55 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<h4 class="mb-3">📍 Chọn nơi làm việc</h4>
+<div class="page-header">
+    <h4>📍 Chọn nơi làm việc</h4>
+</div>
 
 <form method="post" id="modeForm">{% csrf_token %}
-  <input type="hidden" name="mode" id="mode-input" value="store">
+    <input type="hidden" name="mode" id="mode-input" value="store">
+    <input type="hidden" name="store_id" id="store-id-input" value="">
 
-  {% if can_office %}
-    <label class="w-100" onclick="selectOffice()">
-      <div class="card mb-3 border-info" id="office-card">
-        <div class="card-body">
-          <div class="d-flex align-items-center gap-2">
-            <input type="radio" name="choice" id="choice-office" class="form-check-input">
-            <div>
-              <strong>🏢 Đăng nhập Office (Core Team)</strong>
-              <div class="text-muted small">Xem & xử lý sự cố toàn hệ thống</div>
-            </div>
-          </div>
+    {% if can_office %}
+    <div class="store-pick office" id="office-card" onclick="selectOffice()">
+        <div class="store-num">🏢</div>
+        <div class="flex-grow-1">
+            <strong>Office (Core Team)</strong>
+            <div class="text-muted small">Xử lý sự cố toàn hệ thống</div>
         </div>
-      </div>
-    </label>
-    <h6 class="text-muted">— Hoặc làm việc tại tiệm —</h6>
-  {% endif %}
+    </div>
+    <div class="text-muted small text-center my-3">— Hoặc làm việc tại tiệm —</div>
+    {% endif %}
 
-  <div class="row g-2">
     {% for s in stores %}
-    <div class="col-12 col-md-6">
-      <label class="w-100" onclick="selectStore({{ s.id }})">
-        <div class="card store-card p-3" id="store-card-{{ s.id }}">
-          <div class="d-flex align-items-center gap-2">
-            <input type="radio" name="choice" class="form-check-input" data-store="{{ s.id }}">
-            <strong>{{ s.display_name }}</strong>
-          </div>
+    <div class="store-pick" id="store-card-{{ s.id }}" onclick="selectStore({{ s.id }})">
+        <div class="store-num">DT<br>{{ s.store_number }}</div>
+        <div class="flex-grow-1">
+            <strong>{{ s.address }}</strong>
         </div>
-      </label>
     </div>
     {% empty %}
-      <p>Chưa có tiệm nào. Vui lòng vào /admin/ tạo trước.</p>
+        <p class="text-muted text-center">Chưa có tiệm nào.</p>
     {% endfor %}
-  </div>
 
-  <input type="hidden" name="store_id" id="store-id-input" value="">
-  <button type="submit" class="btn btn-primary w-100 mt-3 big-btn" id="submit-btn" disabled>Tiếp tục →</button>
+    <button type="submit" class="btn btn-primary btn-lg w-100 mt-3" id="submit-btn" disabled>Tiếp tục →</button>
 </form>
 
 <script>
+function clearSelection() {
+    document.querySelectorAll('.store-pick').forEach(c => c.classList.remove('selected'));
+}
 function selectOffice() {
-  document.getElementById('mode-input').value = 'office';
-  document.getElementById('store-id-input').value = '';
-  document.getElementById('choice-office').checked = true;
-  document.querySelectorAll('[data-store]').forEach(r => r.checked = false);
-  highlight();
+    clearSelection();
+    document.getElementById('office-card').classList.add('selected');
+    document.getElementById('mode-input').value = 'office';
+    document.getElementById('store-id-input').value = '';
+    document.getElementById('submit-btn').disabled = false;
 }
 function selectStore(id) {
-  document.getElementById('mode-input').value = 'store';
-  document.getElementById('store-id-input').value = id;
-  const officeRadio = document.getElementById('choice-office');
-  if (officeRadio) officeRadio.checked = false;
-  document.querySelectorAll('[data-store]').forEach(r => {
-    r.checked = (r.dataset.store == id);
-  });
-  highlight();
-}
-function highlight() {
-  document.querySelectorAll('.store-card').forEach(c => {
-    c.style.borderColor = '';
-    c.style.background = '';
-  });
-  const office = document.getElementById('office-card');
-  if (office) { office.style.borderColor = ''; office.style.background = ''; }
-
-  if (document.getElementById('mode-input').value === 'office') {
-    if (office) { office.style.borderColor = '#0dcaf0'; office.style.background = '#e7f9ff'; }
-  } else {
-    const sid = document.getElementById('store-id-input').value;
-    if (sid) {
-      const card = document.getElementById('store-card-' + sid);
-      if (card) { card.style.borderColor = '#dc3545'; card.style.background = '#ffe5e5'; }
-    }
-  }
-  // Enable submit
-  const m = document.getElementById('mode-input').value;
-  const s = document.getElementById('store-id-input').value;
-  document.getElementById('submit-btn').disabled = !(m === 'office' || s);
+    clearSelection();
+    document.getElementById('store-card-' + id).classList.add('selected');
+    document.getElementById('mode-input').value = 'store';
+    document.getElementById('store-id-input').value = id;
+    document.getElementById('submit-btn').disabled = false;
 }
 </script>
 {% endblock %}

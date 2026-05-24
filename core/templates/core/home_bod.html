@@ -1,90 +1,64 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<h4>👔 BOD Dashboard</h4>
-<p class="text-muted small">Cập nhật realtime – Hiển thị sự cố đang xử lý & đã hoàn thành trong ngày</p>
+<div class="stat-card">
+    <div class="label">👔 Dashboard</div>
+    <div style="font-size:1.1rem; font-weight:600">Board of Directors</div>
+</div>
 
 {% for d in store_data %}
-<div class="card mb-3 store-card">
-  <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h5 class="mb-0">{{ d.store.display_name }}</h5>
-      <span class="badge bg-success">✅ Hoàn thành hôm nay: {{ d.resolved_count }}</span>
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong>{{ d.store.display_name }}</strong>
+            <span class="badge bg-success">✅ {{ d.resolved_count }}</span>
+        </div>
+
+        {% if d.active %}
+            <div class="text-warning small mb-1 fw-semibold">⏳ Đang chờ / xử lý</div>
+            {% for i in d.active %}
+            <div class="incident-item {% if i.status == 'in_progress' %}in-progress{% endif %}" style="margin-bottom:6px">
+                <div class="title">{{ i.error_type.icon }} {{ i.error_type.name }} – {{ i.machine }}</div>
+                <div class="meta">
+                    {% if i.status == 'in_progress' %}
+                        ⏱ <span class="timer-badge timer" data-start="{{ i.in_progress_at|date:'c' }}"></span> •
+                        PIC: <strong>{% if i.handler %}{{ i.handler.username }}{% else %}-{% endif %}</strong>
+                    {% else %}
+                        ⏳ Chờ: {{ i.waiting_duration }} •
+                        PIC: <strong>{% if i.pic %}{{ i.pic.username }}{% else %}-{% endif %}</strong>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if d.resolved %}
+            <div class="text-success small mb-1 mt-2 fw-semibold">✅ Hoàn thành hôm nay</div>
+            {% for i in d.resolved %}
+            <div class="incident-item resolved" style="margin-bottom:6px">
+                <div class="title">{{ i.error_type.icon }} {{ i.error_type.name }} – {{ i.machine }}</div>
+                <div class="meta">
+                    👨‍🔧 {% if i.handler %}{{ i.handler.username }}{% else %}-{% endif %} •
+                    ⏱ {{ i.processing_duration }} • {{ i.resolved_at|date:"H:i" }}
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if not d.active and not d.resolved %}
+            <p class="text-muted small mb-0">✅ Không có sự cố nào hôm nay.</p>
+        {% endif %}
     </div>
-
-    {# ===== ĐANG XỬ LÝ / CHỜ ===== #}
-    {% if d.active %}
-      <h6 class="text-warning mt-2">⏳ Đang chờ / đang xử lý</h6>
-      {% for i in d.active %}
-        <div class="incident-row {% if i.status == 'in_progress' %}in-progress{% endif %}">
-          <div class="d-flex justify-content-between flex-wrap">
-            <div>
-              <strong>{{ i.error_type.icon }} {{ i.error_type.name }}</strong> – {{ i.machine }}
-              <span class="badge bg-{% if i.status == 'in_progress' %}info{% else %}warning text-dark{% endif %}">{{ i.get_status_display }}</span>
-            </div>
-            <div class="small text-end">
-              {% if i.status == 'in_progress' %}
-                ⏱ Đang xử lý: <span class="timer fw-bold text-info" data-start="{{ i.in_progress_at|date:'c' }}"></span><br>
-                👨‍🔧 PIC:
-                {% if i.handler %}
-                  <strong>{% if i.handler.profile.full_name %}{{ i.handler.profile.full_name }}{% else %}{{ i.handler.username }}{% endif %}</strong>
-                {% else %}
-                  <strong>-</strong>
-                {% endif %}
-              {% else %}
-                ⏳ Chờ: <strong>{{ i.waiting_duration }}</strong><br>
-                👨‍🔧 PIC:
-                {% if i.pic %}
-                  <strong>{% if i.pic.profile.full_name %}{{ i.pic.profile.full_name }}{% else %}{{ i.pic.username }}{% endif %}</strong>
-                {% else %}
-                  <strong>Chưa gán</strong>
-                {% endif %}
-              {% endif %}
-            </div>
-          </div>
-        </div>
-      {% endfor %}
-    {% endif %}
-
-    {# ===== HOÀN THÀNH ===== #}
-    {% if d.resolved %}
-      <h6 class="text-success mt-3">✅ Đã hoàn thành hôm nay</h6>
-      {% for i in d.resolved %}
-        <div class="incident-row resolved">
-          <div class="d-flex justify-content-between flex-wrap">
-            <div>
-              <strong>{{ i.error_type.icon }} {{ i.error_type.name }}</strong> – {{ i.machine }}
-              <span class="badge bg-success">Hoàn thành</span>
-            </div>
-            <div class="small text-end">
-              👨‍🔧 Xử lý bởi:
-              {% if i.handler %}
-                <strong>{% if i.handler.profile.full_name %}{{ i.handler.profile.full_name }}{% else %}{{ i.handler.username }}{% endif %}</strong>
-              {% else %}
-                <strong>-</strong>
-              {% endif %}
-              <br>
-              ⏱ Thời gian xử lý: <strong>{{ i.processing_duration }}</strong><br>
-              🕒 Hoàn thành lúc: {{ i.resolved_at|date:"H:i d/m" }}
-            </div>
-          </div>
-        </div>
-      {% endfor %}
-    {% endif %}
-
-    {% if not d.active and not d.resolved %}
-      <p class="text-muted small mb-0">✅ Không có sự cố nào hôm nay.</p>
-    {% endif %}
-  </div>
 </div>
 {% endfor %}
-
+{% endblock %}
+{% block extra_js %}
 <script>
 function updateTimers(){
-  document.querySelectorAll('.timer').forEach(el=>{
-    const s = new Date(el.dataset.start), d = Math.floor((new Date()-s)/1000);
-    const h = Math.floor(d/3600), m = Math.floor((d%3600)/60), sec = d%60;
-    el.textContent = `${h}h ${m}m ${sec}s`;
-  });
+    document.querySelectorAll('.timer').forEach(el=>{
+        const s=new Date(el.dataset.start), d=Math.floor((new Date()-s)/1000);
+        const h=Math.floor(d/3600), m=Math.floor((d%3600)/60), sec=d%60;
+        el.textContent = h>0 ? `${h}h ${m}m ${sec}s` : `${m}m ${sec}s`;
+    });
 }
 setInterval(updateTimers,1000); updateTimers();
 </script>

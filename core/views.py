@@ -371,3 +371,49 @@ def reset_password(request, uidb64, token):
             return redirect('login')
 
     return render(request, 'core/reset_password.html', {'user_obj': user})
+
+from django.http import JsonResponse, HttpResponse
+
+
+def manifest(request):
+    return JsonResponse({
+        "name": "Incident Manager",
+        "short_name": "Incident",
+        "description": "Quản lý báo cáo sự cố cửa hàng",
+        "start_url": "/",
+        "display": "standalone",
+        "orientation": "portrait",
+        "background_color": "#1F4E78",
+        "theme_color": "#1F4E78",
+        "icons": [
+            {
+                "src": "https://api.iconify.design/twemoji/basket.svg?width=192",
+                "sizes": "192x192",
+                "type": "image/svg+xml"
+            },
+            {
+                "src": "https://api.iconify.design/twemoji/basket.svg?width=512",
+                "sizes": "512x512",
+                "type": "image/svg+xml"
+            }
+        ]
+    })
+
+
+def service_worker(request):
+    sw = '''
+const CACHE = 'incident-v1';
+self.addEventListener('install', e => {
+    self.skipWaiting();
+});
+self.addEventListener('activate', e => {
+    e.waitUntil(clients.claim());
+});
+self.addEventListener('fetch', e => {
+    if (e.request.method !== 'GET') return;
+    e.respondWith(
+        fetch(e.request).catch(() => caches.match(e.request))
+    );
+});
+'''
+    return HttpResponse(sw, content_type='application/javascript')
